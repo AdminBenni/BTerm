@@ -160,7 +160,6 @@ class BTerm:
         self.cursor[1] = y
         if self.cursor[1] >= self.h + self.stretch:
             self.scrollpos = -((self.stretch+(self.cursor[1] - (self.h + self.stretch) + 1)) * self.lsize) if self.scrollpos == -(self.stretch * self.lsize) else self.scrollpos
-            #print(range(self.h + self.stretch, self.cursor[1] + 1))
             for x in range(self.h + self.stretch, self.cursor[1] + 1):
                 for y,elem in enumerate(self.positions):
                     self.positions[y].append(SPos(self.lsize, y, x))

@@ -1,6 +1,7 @@
 import pygame as pg, pyperclip, keyboard
 from copy import copy
 
+
 def reverse_color(col):
     """
         Reverses color
@@ -96,37 +97,37 @@ class SPos:
 
 class BTerm:
     """ Terminal
-        clock           : PyGame clock
-        screen          : PyGame display
-        font            : PyGame font
-        w               : letter width (lsize * w)
-        h               : letter height(lsize * h)
-        wt              : pixel width (must be devisable by lsize)
-        ht              : pixel height(must be devisable by lsize)
-        aa              : antialias (bool)
-        frame           : current frame number
-        lsize           : size of positions
-        bgcol           : background color
-        rbgcol          : reversed background color
-        cursor          : cursor position (vector) (Do not edit directly, use setcursor() instead)
-        selected        : selected area
-        start           : start of the selected area
-        selecting       : selecting area (bool)
-        positions       : vector of positions
-        scrollpos       : scrolling position
-        lastcopied      : text last copied (starts as "")
-        active          : terminal status (bool)
-        stretch         : amount of extra lines below bottom
-        print         (): generates letters for relevant positions
-        endl          (): equivlent to \n in regular print (function)
-        input         (): gets input from user
-        sprint        (): prints without clearing selection
-        events        (): handles PyGame events
-        draw          (): draws info on the screen
-        update        (): updates screen and handles logic
-        setcursor     (): set the cursor to a position
-        clearselection(): clears area from selection
-        __init__      (): parameters: w, h, lsize, bgcol, font, aa
+        clock            : PyGame clock
+        screen           : PyGame display
+        font             : PyGame font
+        w                : letter width (lsize * w)
+        h                : letter height(lsize * h)
+        wt               : pixel width (must be devisable by lsize)
+        ht               : pixel height(must be devisable by lsize)
+        aa               : antialias (bool)
+        frame            : current frame number
+        lsize            : size of positions
+        bgcol            : background color
+        rbgcol           : reversed background color
+        cursor           : cursor position (vector) (Do not edit directly, use setcursor() instead)
+        selected         : selected area
+        start            : start of the selected area
+        selecting        : selecting area (bool)
+        positions        : vector of positions
+        scrollpos        : scrolling position
+        lastcopied       : text last copied (starts as "")
+        active           : terminal status (bool)
+        stretch          : amount of extra lines below bottom
+        print          (): generates letters for relevant positions
+        endl           (): equivlent to \n in regular print (function)
+        input          (): gets input from user
+        sprint         (): prints without clearing selection
+        events         (): handles PyGame events
+        draw           (): draws info on the screen
+        update         (): updates screen and handles logic
+        set_cursor     (): set the cursor to a position
+        clear_selection(): clears area from selection
+        __init__       (): parameters: w, h, lsize, bgcol, font, aa
     """
     clock = pg.time.Clock()
 
@@ -155,7 +156,7 @@ class BTerm:
         self.lastcopied = ""
         self.active     = True
 
-    def setcursor(self, x, y):
+    def set_cursor(self, x, y):
         self.cursor[0] = x
         self.cursor[1] = y
         if self.cursor[1] >= self.h + self.stretch:
@@ -165,9 +166,19 @@ class BTerm:
                     self.positions[y].append(SPos(self.lsize, y, x))
             self.stretch += self.cursor[1] - (self.h + self.stretch) + 1
 
+    def __print_char(self, char, color):
+        if type(char) == str:
+            self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, char, copy(self.cursor), self.rbgcol if color is None else color)
+        elif type(char) == int:
+            self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, chr(char), copy(self.cursor), self.rbgcol if color is None else color)
+        elif char is None:
+            self.positions[self.cursor[0]][self.cursor[1]].letter = None
+        else:
+            raise ValueError("Type '" + str(type(char)) + "' not supported for printing.")
+
     def sprint(self, txt, endline=False, color=None):
         for x in txt:
-            self.positions[self.cursor[0]][self.cursor[1]].letter = None if x is None else Letter(self.lsize, x, copy(self.cursor), self.rbgcol if color is None else color)
+            self.__print_char(x, color)
             if self.cursor[0] == self.w-1:
                 self.__endl()
             else:
@@ -177,15 +188,15 @@ class BTerm:
 
     def print(self, txt, endline=False, color=None):
         self.sprint(txt, endline, color)
-        self.clearselction()
+        self.clear_selction()
 
     def __endl(self):
-        self.setcursor(0, self.cursor[1] + 1)
+        self.set_cursor(0, self.cursor[1] + 1)
 
     def endl(self):
         self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, "\r\n", copy(self.cursor))
         self.__endl()
-        self.clearselction()
+        self.clear_selction()
 
     def input(self, text="", endline=False, color=None):
         inp=""
@@ -238,7 +249,7 @@ class BTerm:
 
             pg.display.flip()
 
-    def __events(self):
+    def __events(self, verbose):
         if self.active:
             for x in pg.event.get():
                 if x.type == pg.QUIT:
@@ -258,8 +269,9 @@ class BTerm:
                                 if letter is not None:
                                     self.lastcopied += letter.letter
                         pyperclip.copy(self.lastcopied)
-                        self.clearselction()
-                        print(self.lastcopied)
+                        self.clear_selction()
+                        if verbose:
+                            print(self.lastcopied)
                 if x.type == pg.MOUSEBUTTONDOWN:
                     if x.button == 1:
                         self.start = SPos.transpos(self.lsize, pg.mouse.get_pos()[0], pg.mouse.get_pos()[1])
@@ -280,14 +292,21 @@ class BTerm:
                 if x.type == pg.MOUSEBUTTONUP:
                     self.selecting = False
 
-    def clearselction(self):
+    def clear_selction(self):
         self.selecting = False
         self.selected = []
         self.start = None
 
-    def update(self):
+    def update(self, verbose=False):
         if self.active:
             self.frame += 1
-            self.__events()
+            self.__events(verbose)
             self.draw()
             self.clock.tick(60)
+
+t = BTerm(1000, 800, 20, (255,128,0))
+
+t.print([x for x in range(1,2048)])
+
+while t.active:
+    t.update()

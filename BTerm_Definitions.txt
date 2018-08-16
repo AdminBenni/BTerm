@@ -1,0 +1,81 @@
+import pygame as pg, pyperclip, keyboard
+from copy import copy
+
+def reverse_color(col):
+    """
+        Reverses color
+    """
+
+def half_color(col):
+    """
+        Halves reversed color
+    """
+
+class Timer:
+    """ Timer
+        start   : time at start
+        duration: time to elapse
+        passed(): time elapsed (bool)
+    """
+
+class Letter:
+    """	Letter on screen
+        size      : size of letter
+        letter    : string character
+        pos       : screen position (vector/SPos)
+        col       : color of letter
+        rcol      : reverse of color
+        __init__(): parameters: size, letter, pos, col
+    """
+
+class SPos:
+	"""	Screen position
+        size      : size of position
+        x         : x position
+        y         : y position
+        xt        : true x position (size * x)
+        yt        : true y position (size * y)
+        letter    : letter on position (Can be None)
+        hovering(): mouse hovering over
+        clicked (): hovering and mouse button down
+        transpos(): translate pixel position to SPos (static)
+        __init__(): parameters: size, x, y, letter
+        __eq__  (): equals operator
+        __str__ (): string representation
+        __repr__(): same as __str__
+    """
+	
+class BTerm:
+    """ Terminal
+        clock            : PyGame clock
+        screen           : PyGame display
+        font             : PyGame font
+        w                : letter width (lsize * w)
+        h                : letter height(lsize * h)
+        wt               : pixel width (must be devisable by lsize)
+        ht               : pixel height(must be devisable by lsize)
+        aa               : antialias (bool)
+        frame            : current frame number
+        lsize            : size of positions
+        bgcol            : background color
+        rbgcol           : reversed background color
+        cursor           : cursor position (vector) (Do not edit directly, use setcursor() instead)
+        selected         : selected area
+        start            : start of the selected area
+        selecting        : selecting area (bool)
+        positions        : vector of positions
+        scrollpos        : scrolling position
+        lastcopied       : text last copied (starts as "")
+        active           : terminal status (bool)
+        stretch          : amount of extra lines below bottom
+        print          (): generates letters for relevant positions
+        endl           (): equivlent to \n in regular print (function)
+        input          (): gets input from user
+        sprint         (): prints without clearing selection
+        events         (): handles PyGame events
+        draw           (): draws info on the screen
+        update         (): updates screen and handles logic
+        set_cursor     (): set the cursor to a position
+        clear_selection(): clears area from selection
+        __init__       (): parameters: w, h, lsize, bgcol, font, aa
+    """

@@ -128,12 +128,12 @@ class BTerm:
         update         (): updates screen and handles logic
         set_cursor     (): set the cursor to a position
         clear          (): clears screen
-        clear_selection(): clears area from selection
+        clear_selection(): clears area from selectionW
         __init__       (): parameters: w, h, lsize, bgcol, font, aa
     """
     clock = pg.time.Clock()
 
-    def __init__(self, w=700, h=700, lsize=15, bgcol=pg.Color(0,0,0), font="cmd.ttf", aa=False):
+    def __init__(self, w=700, h=700, lsize=20, bgcol=pg.Color(0,0,0), font="cmd.ttf", aa=False):
         if w % lsize != 0 or h % lsize != 0:
             raise ValueError("Width and Height of terminal must be divisible by letter size.")
         pg.init()
@@ -172,36 +172,40 @@ class BTerm:
                     self.positions[y].append(SPos(self.lsize, y, x))
             self.stretch += self.cursor[1] - (self.h + self.stretch) + 1
 
+    def __check_cursor_relevancy(self):
+        if self.cursor[0] == self.w - 1:
+            self.__endl()
+        else:
+            self.cursor[0] += 1
+
     def __print_char(self, char, color):
         if type(char) == str:
             if char not in ["\r\n", "\n"]:
                 self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, char, copy(self.cursor), self.rbgcol if color is None else color)
+                self.__check_cursor_relevancy()
             else:
                 self.endl()
-                print(self.cursor)
         elif type(char) == int:
             if chr(char) not in ["\r\n", "\n"]:
                 self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, chr(char), copy(self.cursor), self.rbgcol if color is None else color)
+                self.__check_cursor_relevancy()
             else:
                 self.endl()
         elif char is None:
             self.positions[self.cursor[0]][self.cursor[1]].letter = None
+            self.__check_cursor_relevancy()
         else:
             raise ValueError("Type '" + str(type(char)) + "' not supported for printing.")
 
     def sprint(self, txt, endline=False, color=None):
         for x in txt:
             self.__print_char(x, color)
-            if self.cursor[0] == self.w-1:
-                self.__endl()
-            else:
-                self.cursor[0] += 1
         if endline:
             self.endl()
 
     def print(self, txt, endline=False, color=None):
         self.sprint(txt, endline, color)
-        self.clear_selction()
+        self.clear_selection()
 
     def __endl(self):
         self.set_cursor(0, self.cursor[1] + 1)
@@ -209,7 +213,7 @@ class BTerm:
     def endl(self):
         self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, "\r\n", copy(self.cursor))
         self.__endl()
-        self.clear_selction()
+        self.clear_selection()
 
     def clear(self):
         for x in self.positions:
@@ -286,7 +290,7 @@ class BTerm:
                                 if letter is not None:
                                     self.lastcopied += letter.letter
                         pyperclip.copy(self.lastcopied)
-                        self.clear_selction()
+                        self.clear_selection()
                         if verbose:
                             print(self.lastcopied)
                 if x.type == pg.MOUSEBUTTONDOWN:
@@ -309,7 +313,7 @@ class BTerm:
                 if x.type == pg.MOUSEBUTTONUP:
                     self.selecting = False
 
-    def clear_selction(self):
+    def clear_selection(self):
         self.selecting = False
         self.selected = []
         self.start = None

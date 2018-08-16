@@ -118,6 +118,7 @@ class BTerm:
         lastcopied       : text last copied (starts as "")
         active           : terminal status (bool)
         stretch          : amount of extra lines below bottom
+        kill           (): quits the PyGame process and sets active status to False
         print          (): generates letters for relevant positions
         endl           (): equivlent to \n in regular print (function)
         input          (): gets input from user
@@ -126,6 +127,7 @@ class BTerm:
         draw           (): draws info on the screen
         update         (): updates screen and handles logic
         set_cursor     (): set the cursor to a position
+        clear          (): clears screen
         clear_selection(): clears area from selection
         __init__       (): parameters: w, h, lsize, bgcol, font, aa
     """
@@ -156,6 +158,10 @@ class BTerm:
         self.lastcopied = ""
         self.active     = True
 
+    def kill(self):
+        self.active = False
+        pg.quit()
+
     def set_cursor(self, x, y):
         self.cursor[0] = x
         self.cursor[1] = y
@@ -168,9 +174,16 @@ class BTerm:
 
     def __print_char(self, char, color):
         if type(char) == str:
-            self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, char, copy(self.cursor), self.rbgcol if color is None else color)
+            if char not in ["\r\n", "\n"]:
+                self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, char, copy(self.cursor), self.rbgcol if color is None else color)
+            else:
+                self.endl()
+                print(self.cursor)
         elif type(char) == int:
-            self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, chr(char), copy(self.cursor), self.rbgcol if color is None else color)
+            if chr(char) not in ["\r\n", "\n"]:
+                self.positions[self.cursor[0]][self.cursor[1]].letter = Letter(self.lsize, chr(char), copy(self.cursor), self.rbgcol if color is None else color)
+            else:
+                self.endl()
         elif char is None:
             self.positions[self.cursor[0]][self.cursor[1]].letter = None
         else:
@@ -198,12 +211,16 @@ class BTerm:
         self.__endl()
         self.clear_selction()
 
+    def clear(self):
+        for x in self.positions:
+            x.letter = None
+
     def input(self, text="", endline=False, color=None):
         inp=""
         keys=[]
         self.print(text, endline, color)
         cursor = copy(self.cursor)
-        while t.active:
+        while self.active:
             inp = "".join(list(keyboard.get_typed_strings(keys)))
             self.sprint(inp)
             if "enter" in [x.name for x in keys]:
@@ -303,10 +320,3 @@ class BTerm:
             self.__events(verbose)
             self.draw()
             self.clock.tick(60)
-
-t = BTerm(1000, 800, 20, (255,128,0))
-
-t.print([x for x in range(1,2048)])
-
-while t.active:
-    t.update()

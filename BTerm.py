@@ -217,7 +217,9 @@ class BTerm:
 
     def clear(self):
         for x in self.positions:
-            x.letter = None
+            for y in x:
+                y.letter = None
+        self.set_cursor(0,0)
 
     def input(self, text="", endline=False, color=None):
         inp=""
